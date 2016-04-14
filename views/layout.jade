@@ -1,0 +1,37 @@
+doctype html
+html
+    block head
+        title= title
+        link(rel='stylesheet', href='/stylesheets/style.css')
+        link(rel='stylesheet', href='/stylesheets/bootstrap.min.css', media='screen')
+        script(src='javascripts/jquery-2.1.3.min.js')
+        script(src='javascripts/bootstrap.min.js')
+        script(src='/javascripts/bootstrap.js')
+        
+        script(type='text/javascript', src='/socket.io/socket.io.js')
+        script(type='text/javascript', src='/javascripts/client.js')
+    body
+        nav.navbar.navbar-default.navbar-fixed-top
+            div.container
+                div.navbar-header.page-scroll
+                    button(type='button', class='navbar-toggle',  data-toggle='collapse', data-target='.navbar-collapse', aria-expanded='false', aria-controls='navbar')
+                        span.sr-only Toggle navigation
+                        span.icon-bar
+                        span.icon-bar
+                        span.icon-bar
+                    a.navbar-brand(href='/') Coap-shepherd
+
+                div.collapse.navbar-collapse
+                    ul.nav.navbar-nav
+                        li
+                            a(href='/') Home
+                        li
+                            a(href='/dev') Devices
+                        li
+                            a(href='/observe') Observe
+                        li  
+                            a(href='/contact') Contact
+
+        div.container
+            block content
+
