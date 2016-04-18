@@ -1,8 +1,24 @@
 extends layout
 
 block append head
+    script(type='text/babel', src='/javascripts/dev.js')
 
 block content
-    div.starter-template#devTable
-        p ?
-        #{aHtml}
+    div.col-lg-12
+        .row
+            div.col-lg-9
+                h1.page-header Devices List
+            
+            div.col-lg-3
+                br
+                br
+                div.input-group.custom-search-form.center
+                    input.form-control(type='text' placeholder='Search...')
+                    span.input-group-btn
+                        button.btn.btn-default(type='button')
+                            i.fa.fa-search
+
+    div#devTable
+
+
+    

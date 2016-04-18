@@ -1,6 +1,10 @@
 extends layout
 
 block append head
+    script(type='text/babel', src='/javascripts/devInfo.js')
 
 block content
+    div.col-lg-12
+        h1.page-header Devices Information
 
+    div#devInfo

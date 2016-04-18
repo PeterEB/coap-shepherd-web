@@ -11,6 +11,10 @@ a {
 }
 
 .sivann-logo {
-    width: 30%;
+    width: 30%,
     height: auto;
+}
+
+.center {
+	margin: 0px 10px;
 }
