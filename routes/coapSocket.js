@@ -76,21 +76,8 @@ function socketReqHdlr (msg) {
     var devList;
 
     switch(msg.type) {
-        case 'dump':
-            // devList = shepherd.devList();
-            devList = [{
-                "clientName":"mt7688_01",
-                "ip":"192.168.1.118",
-                'status': 'online',
-                "joinTime":1460625376463,
-           }, {
-                "clientName":"mt7688_02",
-                "ip":"192.168.1.113",
-                'status': 'offline',
-                "joinTime":1460665477896,
-           }];
-           
-            io.sockets.emit('shepInd', {type: 'dump', data: devList});
+        case '':
+
             break;
         case '':
 

@@ -4,12 +4,6 @@ socket.on('shepInd', function (ind) {
     var data = ind.data;
 
     switch (ind.type) {
-        case 'dump':
-            ReactDOM.render(
-                <DevTable devList={data}/>,
-                document.getElementById('devTable')
-            );
-            break;
         case 'registered':
         
             break;
@@ -33,13 +27,13 @@ var DevBox = React.createClass({
         var boxClassName;
 
         if(this.props.dev.status === 'online')
-            boxClassName = 'panel panel-yellow'
+            boxClassName = 'panel panel-yellow';
         else
-            boxClassName = 'panel panel-green'
+            boxClassName = 'panel panel-green';
 
         return {
             boxClassName: boxClassName
-        }
+        };
     },
     render: function () {
         var joinTime = new Date(this.props.dev.joinTime),
@@ -111,6 +105,7 @@ var DevTable = React.createClass({
     }
 });
 
-(function () {
-    socket.emit('req', { type: 'dump' });
-})();
+ReactDOM.render(
+    <DevTable devList={devList} />,
+    document.getElementById('devTable')
+);

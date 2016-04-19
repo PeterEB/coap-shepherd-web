@@ -10,14 +10,25 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/dev', function(req, res, next) {
-    res.render('dev', { title: 'Coap-shepherd'});
+    var devList = shepherd.devList(),
+        dev;
+
+    _.forEach(devList, function (devInfo) {
+        dev = shepherd.find(devInfo.clientName);
+        devInfo.status = dev.status;
+    });
+
+    res.render('dev', { title: 'Coap-shepherd', list: devList});
 });
 
 router.get('/dev/:id', function(req, res, next) {
     var devName = req.params.id,
-        devInfo = shepherd.find(devName);
+        dev = shepherd.find(devName),
+        devInfo = dev.dump();
 
-    res.render('devInfo', { title: 'Coap-shepherd'});
+    devInfo.status = dev.status;
+
+    res.render('devInfo', { title: 'Coap-shepherd', info: devInfo });
 });
 
 router.get('/observe', function(req, res, next) {

@@ -1,6 +1,6 @@
 extends layout
 
-block append head
+block head
     script(type='text/babel', src='/javascripts/dev.js')
 
 block content
@@ -20,5 +20,5 @@ block content
 
     div#devTable
 
-
-    
+    script.
+        window.devList = !{JSON.stringify(list)};
