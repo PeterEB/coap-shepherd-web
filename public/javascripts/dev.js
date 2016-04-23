@@ -1,25 +1,31 @@
-var socket = io.connect('http://192.168.1.109:3000/');
+var socket = io.connect('http://192.168.1.112:3000/');
 
 socket.on('shepInd', function (ind) {
     var data = ind.data;
 
     switch (ind.type) {
         case 'registered':
-        
+            devList[data.clientName] = data;
+            renderDevList();
             break;
         case 'update':
 
             break;
         case 'deregistered':
-
+            delete devList[data];
+            renderDevList();
             break;
         case 'online':
-
+            devList[data].status = 'online';
+            renderDevList();
             break;   
         case 'offline':
-
+            devList[data].status = 'offline';
+            renderDevList();
             break;
     }
+
+
 });
 
 var DevBox = React.createClass({
@@ -89,23 +95,39 @@ var DevBox = React.createClass({
 
 var DevTable = React.createClass({
     render: function () {
-        var devsRender = [];
+        var devsOnRender = [],
+            devsOffRender = [];
 
-        _.forEach(this.props.devList, function (dev) {
-            devsRender.push(
-                <div className='col-sm-12 col-md-12'>
-                    <DevBox dev={dev} />
-                </div>
-            );
+        _.forEach(this.props.devList, function (dev, clientName) {
+            if (dev.status === 'online') {
+                devsOnRender.push(
+                    <div className='col-sm-12 col-md-12'>
+                        <DevBox key='{clientName}' dev={dev} />
+                    </div>
+                );
+            } else {
+                devsOffRender.push(
+                    <div className='col-sm-12 col-md-12'>
+                        <DevBox key='{clientName}' dev={dev} />
+                    </div>
+                );
+            }
         });
 
         return (
-            <div>{devsRender}</div>
+            <div>
+                {devsOnRender}
+                {devsOffRender}
+            </div>
         );
     }
 });
 
-ReactDOM.render(
-    <DevTable devList={devList} />,
-    document.getElementById('devTable')
-);
+function renderDevList() {
+    ReactDOM.render(
+        <DevTable devList={devList} />,
+        document.getElementById('devTable')
+    );
+}
+
+renderDevList();

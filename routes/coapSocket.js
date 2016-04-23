@@ -8,7 +8,7 @@ exports.initialize = function (server) {
 
     shepherd.on('ready', function () {
         console.log('>> coap-shepherd server start!');
-        shepherd.permitJoin(300);
+        shepherd.permitJoin(3000);
     });
 
     shepherd.on('ind', shepIndHdlr);
@@ -31,14 +31,17 @@ function errHdlr (err) {
 }
 
 function shepIndHdlr (ind) {
-    var dev;
+    var dev,
+        devInfo;
 
     switch(ind.type) {
         case 'registered':
             console.log('>> registered: ' + ind.msg.clientName);
             dev = shepherd.find(ind.msg.clientName);
+            devInfo = dev.dump();
+            devInfo.status = dev.status;
 
-            io.sockets.emit('shepInd', {type: 'registered', data: ind.msg.clientName});
+            io.sockets.emit('shepInd', {type: 'registered', data: devInfo});
             break;
         case 'update':
             console.log('>> update: ' + ind.msg.device);

@@ -1,4 +1,4 @@
-var socket = io.connect('http://192.168.1.109:3000/');
+var socket = io.connect('http://192.168.1.112:3000/');
 
 socket.on('shepInd', function (ind) {
     var data = ind.data;
@@ -14,10 +14,16 @@ socket.on('shepInd', function (ind) {
 
             break;
         case 'online':
-
+            if (devInfo.clientName === data) {
+                devInfo.status = 'online';
+                renderDevInfo();
+            }
             break;   
         case 'offline':
-
+            if (devInfo.clientName === data) {
+                devInfo.status = 'offline';
+                renderDevInfo();
+            }
             break;
     }
 });
@@ -109,7 +115,7 @@ var ResBox = React.createClass({
     }
 });
 
-var ObjBox = React.createClass({
+var InstBox = React.createClass({
     render: function () {
         var self = this,
             resRender = [],
@@ -127,12 +133,12 @@ var ObjBox = React.createClass({
 
         return (
             <div>
-              <div className="panel panel-red">
-                <a data-toggle="collapse" data-parent="#accordion" href={collapseHref}>
+              <div className="panel panel-yellow">
+                <a data-toggle="collapse" data-parent="#instanceTable" href={collapseHref}>
                     <div className="panel-heading">
-                      <h4 className="panel-title">
-                          {this.props.oid}/{this.props.iid}
-                      </h4>
+                        <h4 className="panel-title">
+                            {this.props.iid}
+                        </h4>
                     </div>
                 </a>
                 <div id={collapseId} className="panel-collapse collapse">
@@ -146,21 +152,53 @@ var ObjBox = React.createClass({
     }
 });
 
+var ObjBox = React.createClass({
+    render: function () {
+        var self = this,
+            instRender = [],
+            collapseId = this.props.oid,
+            collapseHref = '#' + collapseId;
+
+        _.forEach(this.props.iObj, function (resList, iid) {
+            instRender.push(
+                <div>
+                    <InstBox oid={self.props.oid} iid={iid} resList={resList} />
+                    <br/>
+                </div>
+            );
+        })
+
+        return (
+            <div className="panel panel-red">
+                <a data-toggle="collapse" data-parent="#instanceTable" href={collapseHref}>
+                    <div className="panel-heading">
+                        <h4 className="panel-title">
+                            {this.props.oid}
+                        </h4>
+                    </div>
+                </a>
+
+                <div id={collapseId} className="panel-collapse collapse">
+                    <div className="panel-body" id="instanceTable">
+                        {instRender}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+});
+
 var ObjTable = React.createClass({
     render: function () {
-        var objRender = [],
-            oidTemp;
+        var objRender = [];
 
         _.forEach(this.props.devSo, function (iObj, oid) {
-            oidTemp = oid;
-            _.forEach(iObj, function (resList, iid) {
-                objRender.push(
-                    <div>
-                        <ObjBox oid={oidTemp} iid={iid} resList={resList} />
-                        <br/>
-                    </div>
-                );
-            })
+            objRender.push(
+                <div>
+                    <ObjBox oid={oid} iObj={iObj} />
+                    <br/>
+                </div>
+            );
         });
 
         return (
@@ -171,12 +209,19 @@ var ObjTable = React.createClass({
     }
 });
 
-ReactDOM.render(
-    <InfoBox dev={devInfo} />,
-    document.getElementById('devInfo')
-);
+function renderDevInfo() {
+    ReactDOM.render(
+        <InfoBox dev={devInfo} />,
+        document.getElementById('devInfo')
+    );
+}
 
-ReactDOM.render(
-    <ObjTable devSo={devInfo.so} />,
-    document.getElementById('objList')
-);
+function renderObjList() {
+    ReactDOM.render(
+        <ObjTable devSo={devInfo.so} />,
+        document.getElementById('objList')
+    );
+}
+
+renderDevInfo();
+renderObjList();

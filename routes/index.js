@@ -13,8 +13,8 @@ router.get('/dev', function(req, res, next) {
     var devList = shepherd.devList(),
         dev;
 
-    _.forEach(devList, function (devInfo) {
-        dev = shepherd.find(devInfo.clientName);
+    _.forEach(devList, function (devInfo, clientName) {
+        dev = shepherd.find(clientName);
         devInfo.status = dev.status;
     });
 
