@@ -1,4 +1,4 @@
-var socket = io.connect('http://192.168.1.112:3000/');
+var socket = io.connect(location.protocol + '//' + location.host);
 
 socket.on('shepInd', function (ind) {
     var data = ind.data;
@@ -124,10 +124,12 @@ var DevTable = React.createClass({
 });
 
 function renderDevList() {
-    ReactDOM.render(
-        <DevTable devList={devList} />,
-        document.getElementById('devTable')
-    );
+    if (!_.isEmpty(devList)) {    
+        ReactDOM.render(
+            <DevTable devList={devList} />,
+            document.getElementById('devTable')
+        );
+    }
 }
 
 renderDevList();

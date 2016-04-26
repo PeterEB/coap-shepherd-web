@@ -1,4 +1,4 @@
-var socket = io.connect('http://192.168.1.112:3000/');
+var socket = io.connect(location.protocol + '//' + location.host);
 
 socket.on('shepInd', function (ind) {
     var data = ind.data;
@@ -17,12 +17,20 @@ socket.on('shepInd', function (ind) {
             if (devInfo.clientName === data) {
                 devInfo.status = 'online';
                 renderDevInfo();
+                renderObjList();
             }
             break;   
         case 'offline':
             if (devInfo.clientName === data) {
                 devInfo.status = 'offline';
                 renderDevInfo();
+                renderObjList();
+            }
+            break;
+        case 'notify':
+            if (devInfo.clientName === data.device) {
+                devInfo.so[data.oid][data.iid][data.rid] = data.data;
+                renderObjList();
             }
             break;
     }
@@ -67,7 +75,138 @@ var InfoBox = React.createClass({
 });
 
 var ResBox = React.createClass({
+    getInitialState: function () {
+        return {
+            oid: this.props.oid,
+            iid: this.props.iid,
+            rid: this.props.rid,
+            writeValue: null,
+            attrsValue: null,
+            execArgs: null,
+            attrs: {
+                pmin: null,
+                pmax: null,
+                gt: null,
+                lt: null,
+                stp: null
+            }
+        };
+    },
+    handleWriteChange: function (evt) {
+        this.setState({
+            writeValue: evt.target.value
+        });
+    },
+    handleAttrsChange: function (evt) {
+        this.setState({
+            attrsValue: evt.target.value
+        });
+    },
+    handleExecChange: function (evt) {
+        this.setState({
+            execArgs: evt.target.value
+        });
+    },
+    onReadClick: function () {
+        socket.emit('req', { type: 'read', data: { 
+                clientName: devInfo.clientName,
+                oid: this.state.oid,
+                iid: this.state.iid,
+                rid: this.state.rid
+            } 
+        });
+    },
+    onWriteClick: function () {
+        socket.emit('req', { type: 'write', data: { 
+                clientName: devInfo.clientName,
+                oid: this.state.oid,
+                iid: this.state.iid,
+                rid: this.state.rid,
+                value: this.state.writeValue
+            } 
+        });
+    },
+    onExecClick: function () {
+        socket.emit('req', { type: 'execute', data: { 
+                clientName: devInfo.clientName,
+                oid: this.state.oid,
+                iid: this.state.iid,
+                rid: this.state.rid,
+                value: this.state.execArgs
+            } 
+        });
+    },
+    onDiscClick: function () {
+        var self = this,
+            eventId = 'discover' + ':' + this.state.oid + '/' + this.state.iid + '/' + this.state.rid,
+            attrs = {};
+
+        socket.once(eventId, function (ind) {
+
+            _.forEach(ind.data, function (val, key) {
+                attrs[key] = val;
+            });
+
+            self.setState({
+                attrs: attrs
+            });
+        });
+
+        socket.emit('req', { type: 'discover', data: { 
+                clientName: devInfo.clientName,
+                oid: this.state.oid,
+                iid: this.state.iid,
+                rid: this.state.rid
+            } 
+        });
+    },
+    onWriteAttrsClick: function () {
+        socket.emit('req', { type: 'writeAttrs', data: { 
+                clientName: devInfo.clientName,
+                oid: this.state.oid,
+                iid: this.state.iid,
+                rid: this.state.rid,
+                value: this.state.attrsValue
+            } 
+        });
+    },
+    onObserveClick: function () {
+        socket.emit('req', { type: 'observe', data: { 
+                clientName: devInfo.clientName,
+                oid: this.state.oid,
+                iid: this.state.iid,
+                rid: this.state.rid
+            } 
+        });
+    },
     render: function () {
+        var btnClassName = {
+                read: 'btn btn-default btn-block disabled',
+                write: 'btn btn-default btn-block disabled',
+                exec: 'btn btn-default btn-block disabled',
+                disc: 'btn btn-default btn-block disabled',
+                writeAttrs: 'btn btn-default btn-block disabled',
+                observe: 'btn btn-default btn-block disabled'
+            }; 
+
+        if (devInfo.status === 'online') {
+            if (this.props.val === '_exec_') {
+                _.forEach(btnClassName, function (v, k) {
+                    btnClassName[k] = 'btn btn-default btn-block disabled';
+                });
+                btnClassName.exec = 'btn btn-default btn-block'
+            } else {
+                _.forEach(btnClassName, function (v, k) {
+                    btnClassName[k] = 'btn btn-default btn-block';
+                });
+                btnClassName.exec = 'btn btn-default btn-block disabled'
+            }
+
+        } else {
+            _.forEach(btnClassName, function (v, k) {
+                btnClassName[k] = 'btn btn-default btn-block disabled';
+            });
+        }
 
         return (        
             <div className='panel panel-primary'>
@@ -80,33 +219,55 @@ var ResBox = React.createClass({
                         <div className='col-sm-4 col-md-4'>
                             <div className='huge'>{this.props.val}</div>
                         </div>
+
+                        <div className='col-sm-2 col-md-2'>
+                            <div><strong>Attributes</strong></div>
+                            <div>pmin: {this.state.attrs.pmin}</div>
+                            <div>pmax: {this.state.attrs.pmax}</div>
+                        </div>
+
+                        <div className='col-sm-2 col-md-2'>
+                            <div>gt: {this.state.attrs.gt}</div>
+                            <div>lt: {this.state.attrs.lt}</div>
+                            <div>step: {this.state.attrs.stp}</div>
+                        </div>
                     </div>
                 </div>
 
                 <div className='panel-footer'>
                     <div className='row'>
                         <div className='col-sm-2 col-md-2'>
-                            <div>read</div>
+                            <button type="button" className={btnClassName.read} onClick={this.onReadClick} >Read</button>
                         </div>
 
                         <div className='col-sm-2 col-md-2'>
-                            <div>write</div>
+                            <div className='input-group'>
+                                <input type='text' className="form-control" placeholder='' value={this.state.writeValue} onChange={this.handleWriteChange} />
+                                <span className='input-group-btn'>
+                                    <button type="button" className={btnClassName.write} onClick={this.onWriteClick} >Write</button>
+                                </span>
+                            </div>
                         </div>
 
                         <div className='col-sm-2 col-md-2'>
-                            <div>execute</div>
+                            <div className='input-group'>
+                                <input type='text' className="form-control" placeholder='' value={this.state.execArgs} onChange={this.handleExecChange} />
+                                <span className='input-group-btn'>
+                                    <button type="button" className={btnClassName.exec} onClick={this.onExecClick} >Execute</button>
+                                </span>
+                            </div>
                         </div>
 
                         <div className='col-sm-2 col-md-2'>
-                            <div>discover</div>
+                            <button type="button" className={btnClassName.disc} onClick={this.onDiscClick} >Discover</button>
                         </div>
 
                         <div className='col-sm-2 col-md-2'>
-                            <div>write Attr</div>
+                            <button type="button" className={btnClassName.writeAttrs} onClick={this.onWriteAttrsClick} >Write Attrs</button>
                         </div>
 
                         <div className='col-sm-2 col-md-2'>
-                            <div>observe</div>
+                            <button type="button" className={btnClassName.observe} onClick={this.onObserveClick} >Observe</button>
                         </div>
                     </div>
                 </div>

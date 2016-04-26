@@ -27,7 +27,7 @@ router.get('/dev/:id', function(req, res, next) {
         devInfo = dev.dump();
 
     devInfo.status = dev.status;
-
+    
     res.render('devInfo', { title: 'Coap-shepherd', info: devInfo });
 });
 
