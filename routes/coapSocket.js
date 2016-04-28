@@ -1,4 +1,5 @@
 var io = require('socket.io'),
+    _ = require('lodash'),
     shepherd = require('coap-shepherd');
 
 var coapSocket,
@@ -99,6 +100,7 @@ function socketReqHdlr (msg) {
         case 'read':
             dev = shepherd.find(clientName);
             dev.read(path, function (err, rsp) {
+console.log('>> ' + clientName + ' read: ' + rsp.status);
                 if (rsp.status === '2.05') {
                     io.sockets.emit('shepInd', {type: 'notify', data: {
                             device: clientName,
@@ -115,6 +117,7 @@ function socketReqHdlr (msg) {
             dev = shepherd.find(clientName);
             value = msg.data.value;
             dev.write(path, value, function (err, rsp) {
+console.log('>> ' + clientName + ' write: ' + rsp.status);
                 if (rsp.status === '2.04') {
                     io.sockets.emit('shepInd', {type: 'notify', data: {
                             device: clientName,
@@ -131,7 +134,7 @@ function socketReqHdlr (msg) {
             dev = shepherd.find(clientName);
             args = msg.data.value.split('/');
             dev.execute(path, args, function (err, rsp) {
-                console.log(rsp);
+console.log('>> ' + clientName + ' execute: ' + rsp.status);
                 if (rsp.status === '2.04') {
                 
                 }
@@ -140,6 +143,7 @@ function socketReqHdlr (msg) {
         case 'discover':
             dev = shepherd.find(clientName);
             dev.discover(path, function (err, rsp) {
+console.log('>> ' + clientName + ' discover: ' + rsp.status);
                 if (rsp.status === '2.05') {
                     io.sockets.emit('discover' + ':' + path, { data: rsp.data.attrs });
                 }
@@ -147,8 +151,20 @@ function socketReqHdlr (msg) {
             break;
         case 'writeAttrs':
             dev = shepherd.find(clientName);
+            attrs = msg.data.value;
+
+            _.forEach(attrs, function (val, key) {
+                if(_.isNil(val) || val === '') {
+                    delete attrs[key];
+                } else
+                    attrs[key] = Number(val);
+            });
+
+            attrs.pmin = attrs.pmin || 0;
+            attrs.pmax = attrs.pmax || 60;
+
             dev.writeAttrs(path, attrs, function (err, rsp) {
-                console.log(rsp);
+console.log('>> ' + clientName + ' writeAttrs: ' + rsp.status);
                 if (rsp.status === '2.04') {
                 
                 }
@@ -157,7 +173,9 @@ function socketReqHdlr (msg) {
         case 'observe':
             dev = shepherd.find(clientName);
             dev.observe(path, function (err, rsp) {
+console.log('>> ' + clientName + ' observe: ' + rsp.status);
                 if (rsp.status === '2.05') {
+                    io.sockets.emit('observe' + ':' + path, { data: rsp.data.attrs });
                     io.sockets.emit('shepInd', {type: 'notify', data: {
                             device: clientName,
                             oid: oid,
@@ -166,6 +184,15 @@ function socketReqHdlr (msg) {
                             data: rsp.data 
                         }
                     });
+                }
+            });
+            break;
+        case 'cancelObserve':
+            dev = shepherd.find(clientName);
+            dev.cancelObserve(path, function (err, rsp) {
+console.log('>> ' + clientName + ' cancelObserve: ' + rsp.status);
+                if (rsp.status === '2.05') {
+                    io.sockets.emit('cancelObserve' + ':' + path);
                 }
             });
             break;

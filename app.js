@@ -28,7 +28,6 @@ app.use('/', routes);
 app.use('/dev', routes);
 app.use('/dev/:id', routes);
 app.use('/observe', routes);
-app.use('/contact', routes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

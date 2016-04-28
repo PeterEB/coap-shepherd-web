@@ -24,15 +24,27 @@ router.get('/dev', function(req, res, next) {
 router.get('/dev/:id', function(req, res, next) {
     var devName = req.params.id,
         dev = shepherd.find(devName),
+        observeList = shepherd.observeList()[devName],
         devInfo = dev.dump();
 
     devInfo.status = dev.status;
+    devInfo.observeList = observeList;
     
     res.render('devInfo', { title: 'Coap-shepherd', info: devInfo });
 });
 
 router.get('/observe', function(req, res, next) {
-    res.render('observe', { title: 'Coap-shepherd' });
+    var devList = shepherd.devList(),
+        observeList = shepherd.observeList(),
+        dev;
+
+    _.forEach(devList, function (devInfo, clientName) {
+        dev = shepherd.find(clientName);
+        devInfo.observeList = observeList[clientName];
+        devInfo.status = dev.status;
+    });
+
+    res.render('observe', { title: 'Coap-shepherd', list: devList});
 });
 
 router.get('/contact', function(req, res, next) {

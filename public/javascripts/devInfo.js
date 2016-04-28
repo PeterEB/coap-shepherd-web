@@ -59,7 +59,7 @@ var InfoBox = React.createClass({
         return (
             <div className='row'>
                 <div className='col-sm-3 col-md-3'>
-                    <h3> Status: {this.props.dev.status} </h3>
+                    <h3> Status: {this.props.dev.status}</h3>
                 </div>
 
                 <div className='col-sm-4 col-md-4'>
@@ -76,12 +76,21 @@ var InfoBox = React.createClass({
 
 var ResBox = React.createClass({
     getInitialState: function () {
+        var observeSwitch = {
+                button: this.onObserveClick,
+                value: 'Observe'
+            };
+
+        if (devInfo.observeList.indexOf('/' + this.props.oid + '/' + this.props.iid + '/' + this.props.rid) >= 0) {
+            observeSwitch.button = this.onCancelObserveClick,
+            observeSwitch.value = 'Cancel Observe'
+        } else {
+            observeSwitch.button = this.onObserveClick,
+            observeSwitch.value = 'Observe'
+        }
+
         return {
-            oid: this.props.oid,
-            iid: this.props.iid,
-            rid: this.props.rid,
             writeValue: null,
-            attrsValue: null,
             execArgs: null,
             attrs: {
                 pmin: null,
@@ -89,7 +98,13 @@ var ResBox = React.createClass({
                 gt: null,
                 lt: null,
                 stp: null
-            }
+            },            
+            pminValue: null,
+            pmaxValue: null,
+            gtValue: null,
+            ltValue: null,
+            stpValue: null,
+            observeSwitch: observeSwitch
         };
     },
     handleWriteChange: function (evt) {
@@ -97,31 +112,56 @@ var ResBox = React.createClass({
             writeValue: evt.target.value
         });
     },
-    handleAttrsChange: function (evt) {
-        this.setState({
-            attrsValue: evt.target.value
-        });
-    },
     handleExecChange: function (evt) {
         this.setState({
             execArgs: evt.target.value
         });
     },
+    handlePminChange: function (evt) {
+        if (Number(evt.target.value) || evt.target.value === '' || evt.target.value === '0')
+            this.setState({
+                pminValue: evt.target.value
+            });
+    },
+    handlePmaxChange: function (evt) {
+        if (Number(evt.target.value) || evt.target.value === '' || evt.target.value === '0')
+            this.setState({
+                pmaxValue: evt.target.value
+            });
+    },
+    handleGtChange: function (evt) {
+        if (Number(evt.target.value) || evt.target.value === '' || evt.target.value === '0')
+            this.setState({
+                gtValue: evt.target.value
+            });
+    },
+    handleLtChange: function (evt) {
+        if (Number(evt.target.value) || evt.target.value === '' || evt.target.value === '0')
+            this.setState({
+                ltValue: evt.target.value
+            });
+    },
+    handleStpChange: function (evt) {
+        if (Number(evt.target.value) || evt.target.value === '' || evt.target.value === '0')
+            this.setState({
+                stpValue: evt.target.value
+            });
+    },
     onReadClick: function () {
         socket.emit('req', { type: 'read', data: { 
                 clientName: devInfo.clientName,
-                oid: this.state.oid,
-                iid: this.state.iid,
-                rid: this.state.rid
+                oid: this.props.oid,
+                iid: this.props.iid,
+                rid: this.props.rid
             } 
         });
     },
     onWriteClick: function () {
         socket.emit('req', { type: 'write', data: { 
                 clientName: devInfo.clientName,
-                oid: this.state.oid,
-                iid: this.state.iid,
-                rid: this.state.rid,
+                oid: this.props.oid,
+                iid: this.props.iid,
+                rid: this.props.rid,
                 value: this.state.writeValue
             } 
         });
@@ -129,20 +169,19 @@ var ResBox = React.createClass({
     onExecClick: function () {
         socket.emit('req', { type: 'execute', data: { 
                 clientName: devInfo.clientName,
-                oid: this.state.oid,
-                iid: this.state.iid,
-                rid: this.state.rid,
+                oid: this.props.oid,
+                iid: this.props.iid,
+                rid: this.props.rid,
                 value: this.state.execArgs
             } 
         });
     },
     onDiscClick: function () {
         var self = this,
-            eventId = 'discover' + ':' + this.state.oid + '/' + this.state.iid + '/' + this.state.rid,
+            eventId = 'discover' + ':' + this.props.oid + '/' + this.props.iid + '/' + this.props.rid,
             attrs = {};
 
         socket.once(eventId, function (ind) {
-
             _.forEach(ind.data, function (val, key) {
                 attrs[key] = val;
             });
@@ -154,28 +193,69 @@ var ResBox = React.createClass({
 
         socket.emit('req', { type: 'discover', data: { 
                 clientName: devInfo.clientName,
-                oid: this.state.oid,
-                iid: this.state.iid,
-                rid: this.state.rid
+                oid: this.props.oid,
+                iid: this.props.iid,
+                rid: this.props.rid
             } 
         });
     },
     onWriteAttrsClick: function () {
+        var attrs = {
+            pmin: this.state.pminValue,
+            pmax: this.state.pmaxValue,
+            gt: this.state.gtValue,
+            lt: this.state.ltValue,
+            stp: this.state.stpValue,
+        };
+
         socket.emit('req', { type: 'writeAttrs', data: { 
                 clientName: devInfo.clientName,
-                oid: this.state.oid,
-                iid: this.state.iid,
-                rid: this.state.rid,
-                value: this.state.attrsValue
+                oid: this.props.oid,
+                iid: this.props.iid,
+                rid: this.props.rid,
+                value: attrs
             } 
         });
     },
     onObserveClick: function () {
+        var self = this,
+            eventId = 'observe' + ':' + this.props.oid + '/' + this.props.iid + '/' + this.props.rid;
+
+        socket.once(eventId, function (ind) {
+            self.setState({
+                observeSwitch: {
+                    button: self.onCancelObserveClick,
+                    value: 'Cancel Observe'
+                }
+            });
+        });
+
         socket.emit('req', { type: 'observe', data: { 
                 clientName: devInfo.clientName,
-                oid: this.state.oid,
-                iid: this.state.iid,
-                rid: this.state.rid
+                oid: this.props.oid,
+                iid: this.props.iid,
+                rid: this.props.rid
+            } 
+        });
+    },
+    onCancelObserveClick: function () {
+        var self = this,
+            eventId = 'cancelObserve' + ':' + this.props.oid + '/' + this.props.iid + '/' + this.props.rid;
+
+        socket.once(eventId, function (ind) {
+            self.setState({
+                observeSwitch: {
+                    button: self.onObserveClick,
+                    value: 'Observe'
+                }
+            });
+        });
+
+        socket.emit('req', { type: 'cancelObserve', data: { 
+                clientName: devInfo.clientName,
+                oid: this.props.oid,
+                iid: this.props.iid,
+                rid: this.props.rid
             } 
         });
     },
@@ -187,7 +267,9 @@ var ResBox = React.createClass({
                 disc: 'btn btn-default btn-block disabled',
                 writeAttrs: 'btn btn-default btn-block disabled',
                 observe: 'btn btn-default btn-block disabled'
-            }; 
+            },
+            collapseId = this.props.oid + '_' + this.props.iid + '_' + this.props.rid,
+            collapseHref = '#' + collapseId;
 
         if (devInfo.status === 'online') {
             if (this.props.val === '_exec_') {
@@ -234,7 +316,7 @@ var ResBox = React.createClass({
                     </div>
                 </div>
 
-                <div className='panel-footer'>
+                <div className='panel-footer' id='rescOperate'>
                     <div className='row'>
                         <div className='col-sm-2 col-md-2'>
                             <button type="button" className={btnClassName.read} onClick={this.onReadClick} >Read</button>
@@ -263,11 +345,66 @@ var ResBox = React.createClass({
                         </div>
 
                         <div className='col-sm-2 col-md-2'>
-                            <button type="button" className={btnClassName.writeAttrs} onClick={this.onWriteAttrsClick} >Write Attrs</button>
+                            <button type="button" className={btnClassName.writeAttrs} data-toggle="collapse" data-target={collapseHref} >
+                                Write Attrs 
+                                <span className="pull-right"><i className='fa fa-angle-down' /></span>
+                            </button>
+
                         </div>
 
                         <div className='col-sm-2 col-md-2'>
-                            <button type="button" className={btnClassName.observe} onClick={this.onObserveClick} >Observe</button>
+                            <button type="button" className={btnClassName.observe} onClick={this.state.observeSwitch.button} >{this.state.observeSwitch.value}</button>
+                        </div>
+                    </div>
+
+                    <div id={collapseId} className="collapse">
+                        <br />
+                        <div className='row'>
+                            <div className='col-sm-2 col-md-2'>
+                                <div className="input-group">
+                                    <span className="input-group-addon">pmin</span>
+                                    <input type="text" className="form-control" placeholder="0" value={this.state.pminValue} onChange={this.handlePminChange} 
+                                        data-toggle="tooltip" data-placement="bottom" title="Only enter numbers." />
+                                </div>
+                            </div>
+
+                            <div className='col-sm-2 col-md-2'>
+                                <div className="input-group">
+                                    <span className="input-group-addon">pmax</span>
+                                    <input type="text" className="form-control" placeholder="60" value={this.state.pmaxValue} onChange={this.handlePmaxChange} 
+                                        data-toggle="tooltip" data-placement="bottom" title="Only enter numbers." />
+                                </div>
+                            </div>
+
+                            <div className='col-sm-2 col-md-2'>
+                                <div className="input-group">
+                                    <span className="input-group-addon">gt</span>
+                                    <input type="text" className="form-control" placeholder="" value={this.state.gtValue} onChange={this.handleGtChange} 
+                                        data-toggle="tooltip" data-placement="bottom" title="Only enter numbers." />
+                                </div>
+                            </div>
+
+                            <div className='col-sm-2 col-md-2'>
+                                <div className="input-group">
+                                    <span className="input-group-addon">lt</span>
+                                    <input type="text" className="form-control" placeholder="" value={this.state.ltValue} onChange={this.handleLtChange} 
+                                        data-toggle="tooltip" data-placement="bottom" title="Only enter numbers." />
+                                </div>
+                            </div>
+
+                            <div className='col-sm-2 col-md-2'>
+                                <div className="input-group">
+                                    <span className="input-group-addon">step</span>
+                                    <input type="text" className="form-control" placeholder="" value={this.state.stpValue} onChange={this.handleStpChange} 
+                                        data-toggle="tooltip" data-placement="bottom" title="Only enter numbers." />
+                                </div>
+                            </div>
+
+                            <div className='col-sm-2 col-md-2'>
+                                <button type="button" className={btnClassName.writeAttrs} onClick={this.onWriteAttrsClick} > 
+                                    Write Attrs
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -330,9 +467,9 @@ var ObjBox = React.createClass({
         })
 
         return (
-            <div className="panel panel-red">
+            <div className="panel panel-warning">
                 <a data-toggle="collapse" data-parent="#instanceTable" href={collapseHref}>
-                    <div className="panel-heading">
+                    <div className="panel-heading bg-warning">
                         <h4 className="panel-title">
                             {this.props.oid}
                         </h4>
@@ -386,3 +523,5 @@ function renderObjList() {
 
 renderDevInfo();
 renderObjList();
+
+$('[data-toggle="tooltip"]').tooltip();

@@ -1,6 +1,15 @@
 extends layout
 
-block append head
+block head
+    script(type='text/babel', src='/javascripts/observe.js')
 
 block content
 
+    div.col-lg-12
+        h1.page-header Observing List
+
+    div.col-lg-12
+        div#observeList
+
+    script.
+        window.devList = !{JSON.stringify(list)};

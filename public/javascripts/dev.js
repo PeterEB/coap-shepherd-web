@@ -24,8 +24,6 @@ socket.on('shepInd', function (ind) {
             renderDevList();
             break;
     }
-
-
 });
 
 var DevBox = React.createClass({
@@ -124,7 +122,7 @@ var DevTable = React.createClass({
 });
 
 function renderDevList() {
-    if (!_.isEmpty(devList)) {    
+    if (!_.isEmpty(devList)) {
         ReactDOM.render(
             <DevTable devList={devList} />,
             document.getElementById('devTable')
