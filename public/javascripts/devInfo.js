@@ -19,6 +19,13 @@ socket.on('shepInd', function (ind) {
                 renderDevInfo();
                 renderObjList();
             }
+
+            $.notify({
+                icon: 'fa fa-arrow-circle-o-up',
+                message: ' Device ' + data + ' online.'
+            }, {
+                type: 'success'
+            });
             break;   
         case 'offline':
             if (devInfo.clientName === data) {
@@ -26,6 +33,13 @@ socket.on('shepInd', function (ind) {
                 renderDevInfo();
                 renderObjList();
             }
+            
+            $.notify({
+                icon: 'fa fa-arrow-circle-o-down',
+                message: ' Device ' + data + ' offline.'
+            }, {
+                type: 'warning'
+            });
             break;
         case 'notify':
             if (devInfo.clientName === data.device) {
@@ -39,7 +53,7 @@ socket.on('shepInd', function (ind) {
 var InfoBox = React.createClass({
     render: function () {
         var joinTime = new Date(this.props.dev.joinTime),
-            month = joinTime.getUTCMonth(),
+            month = joinTime.getUTCMonth() + 1,
             day = joinTime.getUTCDate(),
             hour = joinTime.getUTCHours(),
             minute = joinTime.getUTCMinutes();
@@ -434,9 +448,7 @@ var InstBox = React.createClass({
               <div className="panel panel-yellow">
                 <a data-toggle="collapse" data-parent="#instanceTable" href={collapseHref}>
                     <div className="panel-heading">
-                        <h4 className="panel-title">
-                            {this.props.iid}
-                        </h4>
+                        <h4>Instance: {this.props.iid}</h4>
                     </div>
                 </a>
                 <div id={collapseId} className="panel-collapse collapse">
@@ -467,12 +479,10 @@ var ObjBox = React.createClass({
         })
 
         return (
-            <div className="panel panel-warning">
+            <div className="panel panel-blue">
                 <a data-toggle="collapse" data-parent="#instanceTable" href={collapseHref}>
-                    <div className="panel-heading bg-warning">
-                        <h4 className="panel-title">
-                            {this.props.oid}
-                        </h4>
+                    <div className="panel-heading bg-blue">
+                        <h4> {this.props.oid}</h4>
                     </div>
                 </a>
 

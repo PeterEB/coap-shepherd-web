@@ -18,10 +18,24 @@ socket.on('shepInd', function (ind) {
         case 'online':
             devList[data].status = 'online';
             renderDevList();
+
+            $.notify({
+                icon: 'fa fa-arrow-circle-o-up',
+                message: ' Device ' + data + ' online.'
+            }, {
+                type: 'success'
+            });
             break;   
         case 'offline':
             devList[data].status = 'offline';
             renderDevList();
+            
+            $.notify({
+                icon: 'fa fa-arrow-circle-o-down',
+                message: ' Device ' + data + ' offline.'
+            }, {
+                type: 'warning'
+            });
             break;
     }
 });
@@ -41,7 +55,7 @@ var DevBox = React.createClass({
     },
     render: function () {
         var joinTime = new Date(this.props.dev.joinTime),
-            month = joinTime.getUTCMonth(),
+            month = joinTime.getUTCMonth() + 1,
             day = joinTime.getUTCDate(),
             hour = joinTime.getUTCHours(),
             minute = joinTime.getUTCMinutes(),

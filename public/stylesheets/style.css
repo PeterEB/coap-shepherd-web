@@ -1,9 +1,11 @@
 body {
     padding-top: 50px;
+    background-color: #FEFEFE;
 }
 
 a {
     color: #00B7FF;
+    text-decoration: none;
 }
 
 #page {
@@ -21,3 +23,44 @@ a {
     margin-left: auto;
     margin-right: auto;
 }
+
+.panel-blue {
+    border-color: #6BB9F0;
+}
+
+.bg-blue {
+    color: #FFFFFF;
+    background-color: #6BB9F0;
+}
+
+.panel-grey {
+    border-color: #9E9E9E;
+}
+
+.bg-grey {
+    color: #FFFFFF;
+    background-color: #9E9E9E;
+}
+
+.panel-gossip {
+    border-color: #87D37C;
+}
+
+.bg-gossip {
+    color: #FFFFFF;
+    background-color: #87D37C;
+}
+
+.panel-orange {
+    border-color: #F4B350;
+}
+
+.bg-orange {
+    color: #FFFFFF;
+    background-color: #F4B350;
+}
+
+.chartdiv {
+  width : 100%;
+  height  : 400px;
+}   
